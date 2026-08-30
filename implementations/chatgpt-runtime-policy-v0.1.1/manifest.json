@@ -1,0 +1,19 @@
+{
+  "name": "Shadow Carrier ChatGPT Runtime Policy",
+  "version": "0.1.1-experimental",
+  "status": "INCOMPLETE / EXPERIMENTAL / DEFAULT OFF",
+  "files": {
+    "activation-policy.mjs": {
+      "sha256": "40b693bc8dde3117bee1eb8a191713585a6242d3fd558c4a171b5d2eee064511",
+      "bytes": 3663
+    },
+    "test/activation-policy.test.mjs": {
+      "sha256": "5e444fc9aa91137a640daca9d7c68f3560fe6f385d168e2e71d876d1bbc658c5",
+      "bytes": 2726
+    },
+    "README.md": {
+      "sha256": "5f182a9fe04d09b290aecfbdd772dd02cabea63d7ab0ab3419a9065eefcea33b",
+      "bytes": 4304
+    }
+  }
+}
