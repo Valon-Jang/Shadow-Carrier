@@ -57,9 +57,16 @@ jobs:
             exit 1
           fi
           echo "MCP_URL=$URL/mcp" >> "$GITHUB_ENV"
+          echo "$URL/mcp" > /tmp/mcp-url.txt
           echo "### Temporary Shadow Carrier MCP" >> "$GITHUB_STEP_SUMMARY"
           echo "\`$URL/mcp\`" >> "$GITHUB_STEP_SUMMARY"
           echo "MCP_URL=$URL/mcp"
+      - name: Upload endpoint
+        uses: actions/upload-artifact@v4
+        with:
+          name: mcp-endpoint
+          path: /tmp/mcp-url.txt
+          retention-days: 1
       - name: Keep demo alive
         run: |
           echo "Temporary MCP endpoint: $MCP_URL"
