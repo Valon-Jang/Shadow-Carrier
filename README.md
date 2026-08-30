@@ -132,6 +132,10 @@ As the project matures, the repository should move beyond research notes toward 
 
 No profile should be promoted merely because it has seen more data. It must demonstrate portability and preserve quality on held-out workloads.
 
+## Reference implementations
+
+- [ChatGPT MCP v0.1](./implementations/chatgpt-mcp-v0.1/) — read-only remote-MCP prototype with deterministic worker-thread Interceptors, hidden RAM cache, persisted transition learning, TTL compatibility, and SSRF protection. The speculative workers use no additional LLM calls.
+
 ## What early experiments found
 
 So far, experiments have produced both positive and negative results:
@@ -181,11 +185,14 @@ Shadow-Carrier/
 ├── README.md
 ├── docs/
 │   └── SHADOW_CARRIER_OPERATING_PROTOCOL.md
+├── implementations/
+│   └── chatgpt-mcp-v0.1/
 └── research/
     └── SHADOW_CARRIER_RESEARCH_LOG.md
 ```
 
 - [Operating Protocol](./docs/SHADOW_CARRIER_OPERATING_PROTOCOL.md) — current architecture, safety rules, dispatch policy, cache compatibility, training curriculum, metrics, and promotion gates.
+- [ChatGPT MCP v0.1](./implementations/chatgpt-mcp-v0.1/) — first ChatGPT-specific implementation prototype.
 - [Research Log](./research/SHADOW_CARRIER_RESEARCH_LOG.md) — experimental history, benchmark observations, corrections, current hypotheses, and open questions.
 
 ## Current status
