@@ -10,6 +10,26 @@ The ChatGPT-specific research track was frozen on **2026-08-30** at runtime poli
 
 Shadow Carrier is an independent research project. It is not a component or sub-project of Root Engineering.
 
+## Origin — from Burst Fleet to Shadow Carrier
+
+Shadow Carrier started from a much more aggressive idea called **Burst Fleet**.
+
+The original concept was to let one AI rapidly split into multiple workers when useful, then merge them back down through a prepared execution path such as `N -> N/2 -> ... -> 1`. A prototype was built, but the result was much easier to verify as a way to burn tokens than as a reliable speedup. Image-editing work looked somewhat faster in practice; for the broader idea, there was no trustworthy benchmark proving that it was genuinely faster, and the quality of that early implementation was not established well enough to make a strong claim.
+
+Later experiments showed that the AI-side workspace could be used almost like a small text-based execution layer for scripts and tools. That was interesting, but much of the useful behavior turned out not to be fundamentally different from giving the AI better reusable coding Skills. Those pieces therefore evolved toward Skills rather than a separate fleet architecture.
+
+One pattern did survive:
+
+> **Start predictable work early, let the main AI continue useful foreground work, then collect the result only when it is needed.**
+
+If the AI launches a worker and simply waits for it, most of the efficiency advantage disappears. The useful case is overlap: the main AI keeps reasoning or using other tools while a small amount of deterministic work proceeds in the background.
+
+That is where **Shadow** came from. The Carrier remains the authoritative AI in the foreground; the shadow layer prepares limited work behind it and returns evidence later.
+
+In short:
+
+> **Burst Fleet tried to make more AIs. Shadow Carrier learned that one strong AI with well-timed background work was usually the better idea.**
+
 ## Prior art and positioning
 
 Shadow Carrier does **not** claim to have invented speculative tool execution.
