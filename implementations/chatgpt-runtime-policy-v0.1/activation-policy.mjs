@@ -27,6 +27,8 @@ export function evaluateShadowActivation(input, overrides = {}) {
   const deterministic = input.taskDeterministic === true;
   const likelyConsumed = input.resultLikelyConsumed === true;
   const requiresWorkerExternalIO = input.requiresWorkerExternalIO === true;
+  const sideEffectFree = input.sideEffectFree === true;
+  const authoritySafeBeforeResolution = input.authoritySafeBeforeResolution === true;
 
   const off = (reason, details = {}) => ({
     activate: false,
@@ -37,6 +39,8 @@ export function evaluateShadowActivation(input, overrides = {}) {
   });
 
   if (!deterministic) return off("NON_DETERMINISTIC_TASK");
+  if (!sideEffectFree) return off("SIDE_EFFECTFUL_SPECULATION_BLOCKED");
+  if (!authoritySafeBeforeResolution) return off("AUTHORITY_DEPENDENT_SPECULATION_BLOCKED");
   if (!likelyConsumed) return off("LOW_CONSUMPTION_CONFIDENCE");
   if (requiresWorkerExternalIO) return off("WORKER_EXTERNAL_IO_UNAVAILABLE");
   if (topology === "standalone" && !policy.allowStandalone) {
