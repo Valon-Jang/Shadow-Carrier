@@ -14,6 +14,8 @@ const base = {
   taskDeterministic: true,
   resultLikelyConsumed: true,
   requiresWorkerExternalIO: false,
+  sideEffectFree: true,
+  authoritySafeBeforeResolution: true,
 };
 
 test("activates one worker for positive-EV piggyback work during remote wait", () => {
@@ -75,4 +77,24 @@ test("allows CPU-heavy overlap only with strong conservative margin", () => {
   });
   assert.equal(d.activate, true);
   assert.equal(d.reason, "POSITIVE_EV_CPU_HEAVY");
+});
+
+test("blocks speculative code mutation before authoritative source resolution", () => {
+  const d = evaluateShadowActivation({
+    ...base,
+    sideEffectFree: false,
+    authoritySafeBeforeResolution: false,
+  });
+  assert.equal(d.activate, false);
+  assert.equal(d.reason, "SIDE_EFFECTFUL_SPECULATION_BLOCKED");
+});
+
+test("blocks read-only work whose meaning depends on unresolved authority", () => {
+  const d = evaluateShadowActivation({
+    ...base,
+    sideEffectFree: true,
+    authoritySafeBeforeResolution: false,
+  });
+  assert.equal(d.activate, false);
+  assert.equal(d.reason, "AUTHORITY_DEPENDENT_SPECULATION_BLOCKED");
 });
