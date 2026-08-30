@@ -2,221 +2,189 @@
 
 > **Hit -> faster. Miss -> Normal fallback. Never trade answer quality for speculative speed.**
 
-Shadow Carrier is an experimental speculative-prefetch architecture and an open optimization track for AI workflows.
+Shadow Carrier is an experimental optimization project for moving predictable machine work off an AI workflow's critical path while keeping the primary model's reasoning authoritative.
 
-It keeps the primary AI reasoning loop authoritative while deterministic Interceptors prepare likely next **read-only** actions in advance. Unused speculative results remain outside model context. A compatible cache hit can hide tool, retrieval, or search latency; a miss falls back to the normal workflow.
+The project is currently **INCOMPLETE / EXPERIMENTAL / DEFAULT OFF**.
 
-The intended efficiency contract is **zero incremental model-token speculation**: prediction and speculative acquisition should use machine work, stored trajectories, deterministic rules, or other non-LLM mechanisms whenever possible. Evidence that is never selected should never consume model-visible context tokens.
+The ChatGPT-specific research track was frozen on **2026-08-30** at runtime policy **v0.1.1-experimental**. The global default remains **0 workers**.
 
-Shadow Carrier is an **independent research project**. It is not a component or sub-project of Root Engineering.
+Shadow Carrier is an independent research project. It is not a component or sub-project of Root Engineering.
 
 ## Prior art and positioning
 
 Shadow Carrier does **not** claim to have invented speculative tool execution.
 
-The closest known prior implementation identified so far is [ToolAhead](https://github.com/michael-ra/toolahead), which was already public before this repository. ToolAhead learns recurring tool sequences, pre-runs safe calls while an AI agent is still reasoning, reuses prepared results only when the eventual call and workspace are compatible, and otherwise falls back to normal execution. Its transition memory is persisted locally and does not require a separate predictor LLM for its core Markov-style prediction path.
+The closest known public prior implementation identified so far is [ToolAhead](https://github.com/michael-ra/toolahead). ToolAhead already demonstrates recurring tool-sequence learning and speculative execution in this problem family. Shadow Carrier should therefore be judged only on additional measurable value such as better activation policy, stronger quality/authority gates, broader workload coverage, or transferable validated patterns.
 
-That overlap is important and is intentionally documented here rather than hidden.
+## Current ChatGPT finding
 
-Shadow Carrier should therefore be evaluated as a **continuing engineering and optimization effort in the same problem family**, not as a claim of first invention.
+The tested ChatGPT runtime supports a narrow but real overlap surface:
 
-The purpose of this repository is to push the design further where measured evidence supports it, especially around:
+> A detached deterministic local process can make progress while ChatGPT continues required model/tool/connector processing.
 
-- zero-incremental-model-token speculative acquisition,
-- model-invisible storage of unused speculative evidence,
-- broader read/search/research workloads beyond a single tool surface,
-- source/authority/freshness-aware cache compatibility,
-- learning from ordinary Normal trajectories as ground-truth action labels,
-- counterfactual replay for dispatch-policy tuning,
-- portable task-class proficiency profiles when learning can be generalized safely,
-- compiling repeatedly validated trajectories into deterministic Skills or meta-tools,
-- transparent benchmarks against Normal workflows and relevant prior implementations.
+What is **not** available in the tested runtime is equally important:
 
-If another implementation already performs a capability better, Shadow Carrier should learn from it, cite it, and compete through measurable improvements rather than terminology.
+> The local worker cannot independently own hidden Web/Drive/API speculative prefetch, and this package does not transparently intercept ChatGPT built-in tools.
 
-## This repository is a living optimization channel
+The strongest current candidate is therefore:
 
-This repository is both a working research lab and a public distribution point.
+**one local deterministic, read-only, authority-safe support worker, piggyback-dispatched during an already-required foreground ChatGPT step.**
 
-The maintainer can use it to continuously train, test, benchmark, and refine Shadow policies. Other users should be able to take the latest validated version instead of independently rediscovering every optimization from scratch.
+## When it may be useful
 
-The intended development loop is:
+Good candidates include:
 
-```text
-Real Normal + Shadow traces
-        ↓
-Candidate optimization
-        ↓
-Counterfactual replay / benchmark
-        ↓
-Quality and safety gate
-        ↓
-Promote reusable improvement
-        ↓
-Release updated protocol / implementation / proficiency profile
-        ↓
-Users start from a better baseline
-```
+- repository-wide AST / symbol / reference indexing while ChatGPT reads a remote issue, PR, or spec;
+- dependency / impact mapping during required remote/model/tool wait;
+- deterministic stack-trace or log clustering;
+- relevant-test selection when foreground CPU pressure is low;
+- hash / dedup / index / cache preparation over already-present local artifacts;
+- long deterministic local validation that is very likely to be consumed next.
 
-A future user should not have to begin at proficiency level P0 when a generic, privacy-safe, benchmarked action pattern can be transferred. Project-specific paths, secrets, commands, and sensitive context must be removed before any shared proficiency artifact is published.
+The intended use is **support analysis**, not speculative decisions or speculative edits.
 
-This creates two forms of learning:
+## When it must stay off
 
-1. **Local learning** — each workspace adapts to its own recurring trajectories.
-2. **Shared learning** — reusable patterns that survive cross-project validation can be published as improved defaults or portable proficiency profiles.
+Do not treat the current build as a general ChatGPT accelerator.
 
-Shared learning is a roadmap goal, not a claim that a mature pretrained pack already exists today.
+- **No worker-owned external Web/Drive/API prefetch.**
+- **No automatic interception of built-in ChatGPT tools.**
+- **No speculative code edits, writes, sends, deletes, or irreversible actions.**
+- **No authority-dependent decision before the relevant evidence resolves.**
+- **Standalone extra Shadow dispatch is blocked by default.**
+- **Short local parsing speculation remains DON'T USE.**
+- **CPU-heavy foreground work is strongly penalized because contention is measurable.**
+- **Current frozen policy allows at most one worker.**
+- **No universal speedup percentage is validated.**
+- **Autonomous AI patch-reasoning quality parity across held-out tasks is not yet established.**
 
-## Core idea
+See [ChatGPT Shadow Interceptor — Use Cases and Limits](./docs/CHATGPT_SHADOW_INTERCEPTOR_USE_CASES_AND_LIMITS.md) for the explicit boundary.
 
-```text
-Carrier performs current step
-        |
-        + predicts likely next read-only actions
-        |
-        v
-Interceptors pre-execute likely next actions
-        |
-        v
-hidden cache
-        |
-actual next action selected by Carrier
-        |
-   hit -> use cache
-   miss -> Normal fallback
-```
+## Quality contract
 
-The goal is not to replace a capable AI with many smaller agents. The goal is to preserve adaptive reasoning while moving predictable machine work off the critical path.
+Latency or token savings do not count as a win unless:
 
-## Design principles
+1. quality >= Normal,
+2. Hard Failure = 0,
+3. evidence / authority / freshness semantics are unchanged,
+4. the natural Normal tool-call topology is preserved,
+5. dispatch, lifecycle, miss waste, contention, and cleanup are included.
 
-1. **Normal reasoning remains authoritative.** Speculation never decides what the Carrier must do next.
-2. **Speculative work is read-only.** Mutating or irreversible actions are never prefetched.
-3. **Unused results stay outside model context.** Prefetching should not inflate the reasoning context merely because work was performed.
-4. **Prefer zero incremental model tokens for speculation.** Do not recreate a swarm of predictor LLMs unless a benchmark proves the extra model cost is justified.
-5. **Compatibility is checked before reuse.** Target, scope, parameters, authority, freshness, and time cutoff must still match.
-6. **Misses fall back to Normal.** A prediction error may waste machine work, but should not reduce answer quality.
-7. **Quality is the hard gate.** Latency or token savings do not count as a win if reasoning quality regresses.
-8. **Prior art stays visible.** Improvements should cite the systems and ideas they build on.
+Normal must receive the same parser/code/cache/data-access capability as Shadow. Shadow-specific value must come only from prediction, pre-execution, routing, caching, or learned activation layered on top of equal capabilities.
 
-## Current research direction
+## Frozen activation policy v0.1.1-experimental
 
-The current preferred architecture is a **Shadow Scheduler + deterministic Interceptors + hidden cache** rather than a multi-LLM swarm.
-
-The system learns from ordinary Normal tool trajectories as well as Shadow-enabled runs:
+The current policy uses a deterministic gate; it does not call a predictor LLM.
 
 ```text
-Observe Normal
-    -> Assisted Shadow
-    -> Dynamic Shadow
-    -> Compiled Workflow
+hideable_ms = min(worker_completion_ms, hideable_foreground_ms)
+
+gross_gain_ms = p_lower * hideable_ms
+
+expected_gain_ms = gross_gain_ms
+  - dispatch_orchestration_ms
+  - miss_waste_ms
+  - contention_penalty_ms
 ```
 
-Repeated successful trajectories may eventually be compiled into deterministic Skills or meta-tools, leaving the Carrier to handle novelty, conflict, and exceptions.
+Additional hard gates require:
 
-As proficiency increases, more predictable work should move from model-time reasoning and waiting into model-invisible machine execution. The target is not to make the model think more; it is to make the surrounding execution layer better at preparing what the model is likely to need next.
+- deterministic local task,
+- side-effect-free work,
+- authority-safe-before-resolution,
+- likely result consumption,
+- no worker-owned external I/O,
+- piggyback topology by default,
+- minimum hideable window,
+- stronger thresholds under CPU pressure.
 
-## Planned public deliverables
+Implementation: [ChatGPT Runtime Policy v0.1.1](./implementations/chatgpt-runtime-policy-v0.1.1/)
 
-As the project matures, the repository should move beyond research notes toward reusable artifacts such as:
+## Installable frozen package
 
-- a reference implementation,
-- install / integration adapters for supported AI tool surfaces,
-- import / export of local proficiency state,
-- privacy-safe task-class proficiency profiles,
-- benchmarked default routing and dispatch policies,
-- compatibility and freshness policies,
-- reproducible benchmark suites,
-- versioned releases and changelogs,
-- migration guidance when a newer policy clearly outperforms an older one.
+A self-contained Windows PowerShell installer is published here:
 
-No profile should be promoted merely because it has seen more data. It must demonstrate portability and preserve quality on held-out workloads.
+[ShadowCarrier-ChatGPT-RuntimePolicy-v0.1.1.ps1](./installers/ShadowCarrier-ChatGPT-RuntimePolicy-v0.1.1.ps1)
 
-## Reference implementations
+SHA-256:
 
-- [ChatGPT MCP v0.1](./implementations/chatgpt-mcp-v0.1/) — read-only remote-MCP prototype with deterministic worker-thread Interceptors, hidden RAM cache, persisted transition learning, TTL compatibility, and SSRF protection. The speculative workers use no additional LLM calls.
+`c8f61b7145df5a9197cd96ad79215a2ca3b807a41e4670b63ddd2c513b100323`
 
-## What early experiments found
+Default install directory:
 
-So far, experiments have produced both positive and negative results:
+`%LOCALAPPDATA%\ShadowCarrier\chatgpt-runtime-policy-v0.1.1`
 
-- Parallelism is not automatically useful. A single cheap deterministic pass can beat Carrier orchestration.
-- Heterogeneous parsing can benefit from parallel execution when equivalent source-specific parsers run concurrently.
-- Conservative natural-language compression can reduce model-visible input in some synthetic structured workloads without losing decision-bearing atoms.
-- High-quality technical documentation often contains very little safe filler to remove.
-- Retrieval quality matters more than compression when the wrong evidence enters the candidate pool.
-- Recreating full LLM subagents would likely erase much of the intended efficiency gain.
+The installer embeds the frozen policy, tests, documentation, and manifest. After the installer itself is downloaded, installation does not require GitHub/network access. If Node.js 20+ is available, it runs the included policy self-test.
 
-These findings are experimental, not proof that Shadow Carrier improves general AI workflows.
+**Important:** installing this package does **not** automatically connect it to ChatGPT or intercept built-in tools. It installs the deterministic policy artifact for integration/testing on a compatible execution surface.
 
-## Evaluation contract
+Frozen package self-test before publication: **9/9 passed**.
 
-Quality is tracked separately from speed and cost.
+## What the experiments actually showed
 
-Core quality dimensions:
+Both negative and positive results are retained.
 
-- Factual Accuracy
-- Critical Coverage / Recall
-- Evidence Precision / Relevance
-- Scope Fidelity
-- Provenance / Authority Fidelity
-- Conflict Handling
-- Reasoning / Decision Quality
-- Information Efficiency
+### Negative baseline
 
-A material hallucination, decision-changing omission, scope propagation error, provenance error, code regression, or safety/permission violation is treated as a **Hard Failure**.
+A fair naive local parsing retest gave:
 
-Initial promotion target for a workload:
+- Normal mean ~1.108 s;
+- Shadow mean ~1.162 s;
+- Shadow direction ~4.9% slower;
+- held-out next-action prediction 77.2% (61/79);
+- no model-visible output/context advantage under equal parser capability;
+- additional millisecond-scale parser crossover tests also remained negative.
 
-- quality >= Normal
-- Hard Failure = 0
-- hit@3 >= 70%
-- positive net latency value after speculative cost
-- end-to-end latency improves >= 20% **or** model-visible input drops >= 30%
+Conclusion: short/local parsing speculation is not useful in the current design.
 
-These thresholds are provisional and should be recalibrated from real traces.
+### Real overlap and persistent worker substrate
 
-Improvements intended for public release should eventually be compared not only against Normal but also against relevant prior implementations where a fair, reproducible comparison is possible.
+- detached local worker overlap with ChatGPT processing: verified;
+- fresh tiny Python child completion median: ~682 ms;
+- warm blocking FIFO submit median: ~3.4 ms;
+- blocking FIFO idle CPU: 0.0% at measurement resolution;
+- polling worker rejected due avoidable idle CPU use.
 
-## Repository structure
+### Coding/debugging probes
 
-```text
-Shadow-Carrier/
-├── README.md
-├── docs/
-│   └── SHADOW_CARRIER_OPERATING_PROTOCOL.md
-├── implementations/
-│   └── chatgpt-mcp-v0.1/
-└── research/
-    └── SHADOW_CARRIER_RESEARCH_LOG.md
-```
+Observed workload-specific phase results included:
 
-- [Operating Protocol](./docs/SHADOW_CARRIER_OPERATING_PROTOCOL.md) — current architecture, safety rules, dispatch policy, cache compatibility, training curriculum, metrics, and promotion gates.
-- [ChatGPT MCP v0.1](./implementations/chatgpt-mcp-v0.1/) — first ChatGPT-specific implementation prototype.
-- [Research Log](./research/SHADOW_CARRIER_RESEARCH_LOG.md) — experimental history, benchmark observations, corrections, current hypotheses, and open questions.
+- debugging-support phase: mean direction ~17.0% shorter, while the foreground test itself slowed ~14.5% from contention;
+- remote/model/tool-wait coding exploration: observed phase direction ~36.5% shorter across three pairs;
+- controlled hard multi-file Xarray workflow with identical patch procedure: mean direction ~21.7% shorter across two pairs with equal final patch/test quality;
+- authority-safe held-out Xarray probe: one counterbalanced pair observed ~13.6% shorter with the same correct no-patch conclusion.
+
+These are **research observations, not general ChatGPT coding speed claims**. Runtime, workload, connector latency, cache state, ordering, and worker size all affect the result.
+
+## Authority-safety lesson
+
+A real Xarray case exposed an important quality failure mode: a technically plausible one-line patch existed, but maintainers explicitly rejected that behavioral change as contrary to intended semantics.
+
+That finding changed the policy. Shadow may prepare neutral local analysis early, but it must not pre-commit a patch or authority-dependent decision before the relevant evidence resolves.
+
+## Invalidated claims
+
+Earlier figures of approximately **29.2% latency reduction** and **99.5% model-visible input reduction** are invalid as Shadow Carrier performance evidence. The first used simulated overlap; the second denied Normal an equivalent parser capability.
+
+Do not reuse those figures as benchmark claims.
+
+## Repository map
+
+- [ChatGPT Runtime Policy v0.1.1](./implementations/chatgpt-runtime-policy-v0.1.1/) — current frozen deterministic activation policy.
+- [Windows installer](./installers/ShadowCarrier-ChatGPT-RuntimePolicy-v0.1.1.ps1) — self-contained install artifact.
+- [Use Cases and Limits](./docs/CHATGPT_SHADOW_INTERCEPTOR_USE_CASES_AND_LIMITS.md) — explicit supported and blocked conditions.
+- [Research Freeze — 2026-08-30](./research/CHATGPT_SHADOW_INTERCEPTOR_RESEARCH_FREEZE_2026-08-30.md) — complete current checkpoint.
+- [ChatGPT Shadow Interceptor Checkpoint](./research/CHATGPT_SHADOW_INTERCEPTOR_CHECKPOINT_2026-08-30.md) — detailed experimental history before freeze.
+- [ChatGPT MCP v0.1](./implementations/chatgpt-mcp-v0.1/) — older remote-MCP prototype; useful history, not the current ChatGPT runtime policy.
+- [Operating Protocol](./docs/SHADOW_CARRIER_OPERATING_PROTOCOL.md) — broader project protocol; ChatGPT-specific conflicting legacy guidance is superseded by the newer runtime policy documents.
+- [Research Log](./research/SHADOW_CARRIER_RESEARCH_LOG.md) — broader research history.
 
 ## Current status
 
-**Experimental.** Shadow Carrier is currently a research architecture and optimization track, not a finished framework or production-ready agent system.
+Research is paused at the frozen checkpoint.
 
-The closest known prior implementation, ToolAhead, already demonstrates that this general speculative-tool-execution family can be implemented and installed. Shadow Carrier's job is therefore to produce **measurable additional value** through better policies, broader workload coverage, transferable proficiency, stronger evidence handling, or other validated improvements.
+Until repeated held-out autonomous end-to-end solves demonstrate quality >= Normal, Hard Failure=0, authority fidelity, and positive net wall-clock value under these same safety rules:
 
-The next useful evidence should come from measured real multi-step tool traces rather than additional architecture speculation.
+**INCOMPLETE / EXPERIMENTAL / DEFAULT OFF / 0 workers globally**
 
-## Research priority
-
-1. collect compact Normal + Shadow action traces,
-2. improve next-action prediction without adding speculative LLM-token cost,
-3. learn useful source families and dead ends,
-4. tune dynamic worker count through counterfactual replay,
-5. determine which learned patterns transfer safely across projects,
-6. define import/export formats for proficiency state,
-7. verify quality parity,
-8. benchmark against Normal and relevant prior implementations,
-9. measure true end-to-end latency and context effects,
-10. compile only repeatedly validated trajectories,
-11. publish improved defaults/profiles only after cross-project validation.
-
----
-
-The objective is simple: **keep the reasoning quality of a strong AI, continuously improve the machine layer around it, and let future users start from the best validated baseline available.**
+The objective remains: **preserve the reasoning quality of the strong AI and move only validated, predictable machine work off the critical path.**
