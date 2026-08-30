@@ -28,6 +28,7 @@ export class ShadowEngine {
     this.minConfidence = minConfidence;
     this.allowedDomains = allowedDomains;
     this.prevActualKey = "$START";
+    this.lastPrediction = null;
     this.inflight = new Map();
     this.stats = { actualCalls: 0, hits: 0, misses: 0, prefetches: 0, prefetchErrors: 0 };
   }
@@ -56,6 +57,11 @@ export class ShadowEngine {
     }
 
     const prev = this.prevActualKey;
+    if (this.lastPrediction?.from === prev) {
+      for (const predicted of this.lastPrediction.keys) {
+        if (predicted !== key) this.table.recordMiss(prev, predicted);
+      }
+    }
     this.table.record(prev, key, task);
     this.prevActualKey = key;
     this.table.save(this.stateFile);
@@ -65,6 +71,7 @@ export class ShadowEngine {
 
   async prefetchFrom(currentKey) {
     const candidates = this.table.top(currentKey, this.prefetchTopK, this.minConfidence);
+    this.lastPrediction = { from: currentKey, keys: candidates.map((c) => c.next) };
     for (const candidate of candidates) {
       const task = candidate.example;
       if (!task?.url) continue;
